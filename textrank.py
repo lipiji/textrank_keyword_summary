@@ -31,6 +31,7 @@ stop_words = load_stopwords("./stopwords.txt")
 
 class TextRankKeyword():
     def segment(self, text):
+        text = text.replace('\n', '').replace(' ', '')
         word_tag_list = pseg.cut(text)
         word_tag_list = list(map(lambda x: [x.word, x.flag], word_tag_list))
         return word_tag_list
@@ -38,12 +39,12 @@ class TextRankKeyword():
     def get_word_links(self, text):
         word_tag_list = self.segment(text)
         word_keyword_1 = list(map(lambda x: [x[0], True] if 'n' in x[1] and x[0] not in stop_words else [x[0], False], word_tag_list))
-        word_link_list = []
+        word_list = []
         for i in range(len(word_keyword_1)):
             current_word, current_flag = word_keyword_1[i][0], word_keyword_1[i][1]
             if current_flag:
-                word_link_list.append(current_word)
-        return word_link_list
+                word_list.append(current_word)
+        return word_list, word_keyword_1
     
     def combine(self, word_list, window = 2):
         if window < 2: window = 2
@@ -60,7 +61,7 @@ class TextRankKeyword():
         word_index     = {}
         index_word     = {}
         words_number = 0
-        word_list = self.get_word_links(text)
+        word_list, edge_list = self.get_word_links(text)
         for word in word_list:
             if not word in word_index:
                 word_index[word] = words_number
@@ -68,9 +69,8 @@ class TextRankKeyword():
                 words_number += 1
 
         graph = np.zeros((words_number, words_number))
-    
-        for w1, w2 in self.combine(word_list, window):
-            if w1 in word_index and w2 in word_index and w1 != w2:
+        for (w1, t1), (w2, t2) in self.combine(edge_list, window):
+            if t1 and t2 and (w1 in word_index) and (w2 in word_index) and (w1 != w2):
                 index1 = word_index[w1]
                 index2 = word_index[w2]
                 graph[index1][index2] = 1.0
@@ -140,7 +140,7 @@ class TextRankSummary():
 if __name__ == '__main__':
     text = ''.join(list(open('./data/07.txt', 'r', encoding='utf8').readlines()))
     keyword_extractor = TextRankKeyword()
-    keyword_weight_list = keyword_extractor.get_keyword_with_textrank(text)
+    keyword_weight_list = keyword_extractor.get_keyword_with_textrank(text, 20)
     print("关键词是:")
     print(keyword_weight_list)
 
