@@ -138,7 +138,7 @@ class TextRankSummary():
 
     
 if __name__ == '__main__':
-    text = ''.join(list(open('./data/07.txt', 'r', encoding='utf8').readlines()))
+    text = ''.join(list(open('./data/08.txt', 'r', encoding='utf8').readlines()))
     keyword_extractor = TextRankKeyword()
     keyword_weight_list = keyword_extractor.get_keyword_with_textrank(text, 20)
     print("关键词是:")
