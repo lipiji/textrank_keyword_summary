@@ -30,7 +30,6 @@ class TextProcessor():
             return para.split("\n")
         
         def segment(text):
-            text = text.replace('\n', '').replace(' ', '').lower()
             word_tag_list = pseg.cut(text)
             word_tag_list = list(map(lambda x: [x.word, x.flag], word_tag_list))
             word_list, word_list_4_keyword, word_list_4_summary = [], [], []
@@ -44,7 +43,7 @@ class TextProcessor():
                         word_list_4_keyword.append(word)
             return (word_list, word_list_4_keyword, word_list_4_summary)
 
-        sentences = cut_sents(text.replace('\n', '').replace(' ', ''))
+        sentences = cut_sents(text.replace('\n', '').replace(' ', '').lower())
         sentences = list(filter(lambda x: len(x)>1, sentences))
         word_list, word_list_4_keyword, word_list_4_summary = [], [], []
         for ws, ws_ke, ws_sum in list(map(lambda x: segment(x), sentences)):
@@ -52,6 +51,22 @@ class TextProcessor():
             word_list_4_keyword.append(ws_ke)
             word_list_4_summary.append(ws_sum)
         assert len(sentences) == len(word_list)
+        sentences_, word_list_, word_list_4_keyword_, word_list_4_summary_ = [], [], [], []
+        for sent, words, words_kw, words_sum in \
+                zip(sentences, word_list, word_list_4_keyword, word_list_4_summary):
+            if len(words_kw) < 2:
+                continue
+            if float(len(words_sum)) / len(words) < 0.1:
+                continue
+            sentences_.append(sent)
+            word_list_.append(words)
+            word_list_4_keyword_.append(words_kw)
+            word_list_4_summary_.append(words_sum)
+
+        sentences = sentences_
+        word_list = word_list_
+        word_list_4_keyword = word_list_4_keyword_
+        word_list_4_summary = word_list_4_summary_
         return sentences, word_list, word_list_4_keyword, word_list_4_summary
 
 
@@ -111,8 +126,9 @@ class TextRankSummary():
         for x in range(sentences_num):
             for y in range(x, sentences_num):
                 similarity = self.sentence_simlarity( _source[x], _source[y])
-                graph[x, y] = similarity
-                graph[y, x] = similarity
+                if similarity > 0.:
+                    graph[x, y] = similarity
+                    graph[y, x] = similarity
             
         nx_graph = nx.from_numpy_matrix(graph)
         scores = nx.pagerank(nx_graph, **pagerank_config)              # this is a dict
@@ -132,11 +148,11 @@ if __name__ == '__main__':
     sentences, word_list, word_list_4_keyword, word_list_4_summary = textprocessor.get_seged_sentences(text)
     keyword_extractor = TextRankKeyword()
     keyword_weight_list = keyword_extractor.get_keyword_with_textrank(word_list, word_list_4_keyword, top_n=20, min_len_word=2)
-    print("关键词是:")
+    print("Keywords:")
     print(keyword_weight_list)
 
 
     summary = TextRankSummary()
     summary_sentences = summary.get_summary_with_textrank(sentences, word_list_4_summary, top_n=5)
-    print("摘要是：")
+    print("Summary:")
     print(summary_sentences)
