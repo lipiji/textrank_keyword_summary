@@ -142,7 +142,7 @@ class TextRankSummary():
 
     
 if __name__ == '__main__':
-    text = ''.join(list(open('./data/08.txt', 'r', encoding='utf8').readlines()))
+    text = ''.join(list(open('./data/06.txt', 'r', encoding='utf8').readlines()))
     textprocessor = TextProcessor()
 
     sentences, word_list, word_list_4_keyword, word_list_4_summary = textprocessor.get_seged_sentences(text)
