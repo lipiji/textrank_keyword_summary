@@ -46,8 +46,8 @@ class MainHandler(tornado.web.RequestHandler):
     def post(self):
         start = mstime()
         '''
-		input: '{"text":"艾灵", "num_kw":5, "num_sum":5}'
-		'''
+	input: '{"text":"输入文本。", "num_kw":5, "num_sum":5}'
+	'''
         try:
             q = self.request.body.decode()
             json_q = json.loads(q)
