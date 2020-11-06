@@ -131,7 +131,7 @@ class TextRankSummary():
                     graph[y, x] = similarity
             
         nx_graph = nx.from_numpy_matrix(graph)
-        scores = nx.pagerank(nx_graph, **pagerank_config)              # this is a dict
+        scores = nx.pagerank(nx_graph, **pagerank_config)
         sorted_scores = sorted(scores.items(), key = lambda item: item[1], reverse=True)
 
         for index, score in sorted_scores:
